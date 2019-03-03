@@ -104,4 +104,4 @@ optional arguments:
   --log-norm            log norm values during MCMC (default: False)
 
 TODO:
- - Actually implement PT sampler
+ - update hdf5 output
