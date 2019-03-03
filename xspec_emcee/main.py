@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Use EMCEE to do MCMC in Xspec.
+Use EMCEE to do PT-MCMC in Xspec.
 Jeremy Sanders 2012-2017
 
 Requires Python 2.7+, numpy, h5py and emcee
@@ -60,7 +60,7 @@ def expand_systems(systems):
     return out
 
 def do_mcmc(xcms,
-            nwalkers=100, nburn=100, niters=1000,
+            nwalkers=100, nburn=100, ntemps=10, niters=1000,
             systems=['localhost'],
             outchain=['out.chain'],
             outhdf5='out.hdf5',
@@ -104,30 +104,33 @@ def do_mcmc(xcms,
     pool = XspecPool(combmodel)
 
     # sample the mcmc
-    sampler = emcee.EnsembleSampler(nwalkers, ndims, None, pool=pool)
+    sampler = emcee.PTSampler(ntemps,nwalkers, ndims, None, pool=pool)
 
+    p0_all = np.zeros((ntemps,nwalkers,ndims))
+    for t in range(ntemps): p0_all[t,:,:] = p0
+    
     print("Starting MCMC")
     if not continuerun and nburn > 0:
         # burn in
         print("Burn in period started")
-        pos, prob, state = sampler.run_mcmc(p0, nburn)
+        pos, prob, state = sampler.run_mcmc(p0_all, nburn)
         sampler.reset()
         print("Burn in period finished")
     else:
         # no burn in
         state = None
-        pos = p0
+        pos = p0_all
 
     if not continuerun:
         # create new datasets, extensible along number of iterations
         hdf5file = h5py.File(outhdf5, "w")
         chain = hdf5file.create_dataset(
             "chain",
-            (nwalkers, niters, ndims),
+            (ntemps,nwalkers, niters, ndims),
             maxshape=(nwalkers, None, ndims))
         lnprob = hdf5file.create_dataset(
             "lnprob",
-            (nwalkers, niters),
+            (ntemps,nwalkers, niters),
             maxshape=(nwalkers, None))
         start = 0
 
@@ -139,11 +142,11 @@ def do_mcmc(xcms,
         lnprob = hdf5file["lnprob"]
 
         start = chain.attrs["count"]
-        pos = N.array(chain[:, start-1, :])
+        pos = N.array(chain[:,:, start-1, :])
         print("Restarting at iteration", start)
 
-        chain.resize((nwalkers, niters, ndims))
-        lnprob.resize((nwalkers, niters))
+        chain.resize((ntemps,nwalkers, niters, ndims))
+        lnprob.resize((ntemps,nwalkers, niters))
 
     # iterator interface allows us to trap ctrl+c and know where we are
     lastsave = time.time()
@@ -153,8 +156,8 @@ def do_mcmc(xcms,
             pos, rstate0=state, storechain=False,
             iterations=niters-start):
 
-            chain[:, index, :] = p
-            lnprob[:, index] = l
+            chain[:,:, index, :] = p
+            lnprob[:,:, index] = l
             index += 1
 
             if autosave and time.time() - lastsave > 60*10:
@@ -174,7 +177,7 @@ def do_mcmc(xcms,
 def write_xspec_chains(filenames, chain, lnprob, combmodel):
     """Write an xspec text chain file for each xcm input file."""
 
-    nwalkers, niters, ndims = chain.shape
+    ntemps,nwalkers, niters, ndims = chain.shape
     # real length could be shorter
     niters = chain.attrs["count"]
 
@@ -220,7 +223,7 @@ def run():
     """Main program."""
 
     p = argparse.ArgumentParser(
-        description="Xspec MCMC with EMCEE. Jeremy Sanders 2012-2017.",
+        description="Xspec MCMC with PT-EMCEE. Jeremy Sanders 2012-2017. Alexander Dittmann 2019",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     p.add_argument("xcms", metavar="XCM", nargs="+",
@@ -229,6 +232,8 @@ def run():
                    help="Number of iterations")
     p.add_argument("--nburn", metavar="N", type=int, default=500,
                    help="Number of burn iterations")
+    p.add_argument("--ntemps", metavar="N", type=int, default = 10,
+                   help="Number of temperatures")
     p.add_argument("--nwalkers", metavar="N", type=int, default=50,
                    help="Number of walkers")
     p.add_argument("--systems", default="localhost", metavar="LIST",
@@ -275,6 +280,7 @@ def run():
         systems = args.systems.split(),
         nwalkers = args.nwalkers,
         nburn = args.nburn,
+        ntemps = args.ntemps,
         niters = args.niters,
         outchain = outchain,
         outhdf5 = args.output_hdf5,
