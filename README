@@ -7,10 +7,15 @@ xspec.
 This program has the advantage over the built-in Goodman Weare sampler
 in xspec of being able to run multiple xspec processes simultaneously,
 speeding up the analysis. It can also switch to parameterizing norm
-parameters in log space.
+parameters in log space. 
 
-** Please acknowledge use of this code by Jeremy Sanders in any
-publications. **
+This program has the additional advantage that it can effectively sample
+multi-modal posterior distributions using the parallel tempering ensemble
+sampler built into emcee.
+
+** Please acknowledge use of the XPEC_EMCEE by Jeremy Sanders in any
+publications, and the modifications by Alexander Dittmann if they
+benefit you.**
 
 As described on their website, emcee is an extensible, pure-Python
 implementation of of Goodman & Weare's Affine Invariant Markov chain
@@ -30,11 +35,11 @@ The program will run using an input XCM file (loading data+model). It
 writes out an xspec-compatible chain file, plus a HDF5 data file
 containing the chains and log likelihoods.
 
-You need to choose the number of iterations, length of burn in period
-and number of walkers. Remember that for every iteration you get the
-number of walkers points in the output chain file. The chains from the
-walkers are flattened in the output .chain file, with all the results
-from one walker, followed by the next.
+You need to choose the number of iterations, length of burn in period,
+number of temperatures, and number of walkers. Remember that for every
+iteration you get the number of walkers points in the output chain file.
+The chains from the walkers are flattened in the output .chain file, 
+with all the results from one walker, followed by the next.
 
 The walkers are started clustered around the parameters of the XCM
 file given, using the delta value of the parameter as the width of a
@@ -68,7 +73,7 @@ will also save the current state of the chain and exit. The chain can
 be continued with the --continue-run option.
 
 $ ./xspec_emcee.py --help
-usage: xspec_emcee.py [-h] [--niters N] [--nburn N] [--nwalkers N]
+usage: xspec_emcee.py [-h] [--niters N] [--nburn N] [--ntemps N] [--nwalkers N]
                       [--systems LIST] [--output-hdf5 FILE]
                       [--output-chain FILE] [--continue-run] [--debug]
                       [--no-chdir] [--initial-parameters FILE] [--log-norm]
@@ -83,6 +88,7 @@ optional arguments:
   -h, --help            show this help message and exit
   --niters N            Number of iterations (default: 5000)
   --nburn N             Number of burn iterations (default: 500)
+  --ntemps N            Number of temperatures (default: 10)
   --nwalkers N          Number of walkers (default: 50)
   --systems LIST        Space separated list of systems to run on (default:
                         localhost)
@@ -98,4 +104,4 @@ optional arguments:
   --log-norm            log norm values during MCMC (default: False)
 
 TODO:
- - Use local xspec to find remote xspecs automatically?
+ - Actually implement PT sampler
