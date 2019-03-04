@@ -104,4 +104,4 @@ optional arguments:
   --log-norm            log norm values during MCMC (default: False)
 
 TODO:
- - Debug, add binary file output
+ - Debug, add binary table output
