@@ -127,11 +127,11 @@ def do_mcmc(xcms,
         chain = hdf5file.create_dataset(
             "chain",
             (ntemps,nwalkers, niters, ndims),
-            maxshape=(nwalkers, None, ndims))
+            maxshape=(ntemps,nwalkers, None, ndims))
         lnprob = hdf5file.create_dataset(
             "lnprob",
             (ntemps,nwalkers, niters),
-            maxshape=(nwalkers, None))
+            maxshape=(ntemps,nwalkers, None))
         start = 0
 
     else:
@@ -171,7 +171,7 @@ def do_mcmc(xcms,
     else:
         chain.attrs["count"] = index
         write_xspec_chains(outchain, chain, lnprob, combmodel)
-
+    
     hdf5file.close()
 
 def write_xspec_chains(filenames, chain, lnprob, combmodel):
@@ -204,8 +204,8 @@ def write_xspec_chains(filenames, chain, lnprob, combmodel):
 
         # write each walker separately
         for wi in xrange(nwalkers):
-            chainw = chain[wi, :, :]
-            statw = lnprob[wi, :]
+            chainw = chain[0,wi, :, :]
+            statw = lnprob[0,wi, :]
 
             # then the iterations
             for params, stat in itertools.izip(chainw, statw):
