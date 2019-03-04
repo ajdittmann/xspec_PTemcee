@@ -79,7 +79,8 @@ usage: xspec_emcee.py [-h] [--niters N] [--nburn N] [--ntemps N] [--nwalkers N]
                       [--no-chdir] [--initial-parameters FILE] [--log-norm]
                       XCM
 
-Xspec MCMC with EMCEE. Jeremy Sanders 2012-2016.
+Xspec MCMC with Parallel-Tempered EMCEE. 
+Jeremy Sanders 2012-2016. Alexander Dittmann 2019.
 
 positional arguments:
   XCM                   Input XCM file
