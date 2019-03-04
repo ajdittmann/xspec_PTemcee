@@ -104,4 +104,4 @@ optional arguments:
   --log-norm            log norm values during MCMC (default: False)
 
 TODO:
- - update hdf5 output
+ - Debug, add binary file output
