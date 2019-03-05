@@ -111,4 +111,4 @@ optional arguments:
   --log-norm            log norm values during MCMC (default: False)
 
 TODO:
-
+  -Add support for passing 'betas' argument to sampler
