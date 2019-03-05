@@ -104,16 +104,16 @@ def do_mcmc(xcms,
     pool = XspecPool(combmodel)
 
     # sample the mcmc
-    sampler = emcee.PTSampler(ntemps,nwalkers, ndims, None, pool=pool)
+    sampler = emcee.PTSampler(ntemps,nwalkers, ndims, None, None, pool=pool)
 
-    p0_all = np.zeros((ntemps,nwalkers,ndims))
+    p0_all = N.zeros((ntemps,nwalkers,ndims))
     for t in range(ntemps): p0_all[t,:,:] = p0
     
     print("Starting MCMC")
     if not continuerun and nburn > 0:
         # burn in
         print("Burn in period started")
-        pos, prob, state = sampler.run_mcmc(p0_all, nburn)
+        pos, prob, state = sampler.run_mcmc(p0_all,nburn)
         sampler.reset()
         print("Burn in period finished")
     else:
@@ -153,7 +153,7 @@ def do_mcmc(xcms,
     index = start
     try:
         for p, l, s in sampler.sample(
-            pos, rstate0=state, storechain=False,
+            pos, storechain=False,
             iterations=niters-start):
 
             chain[:,:, index, :] = p
@@ -163,6 +163,8 @@ def do_mcmc(xcms,
             if autosave and time.time() - lastsave > 60*10:
                 chain.attrs["count"] = index
                 hdf5file.flush()
+                N.save('emcee_chain.npy',chain)
+                N.save('emcee_loglike.npy',lnprob)
 
     except KeyboardInterrupt:
         chain.attrs["count"] = index
@@ -170,7 +172,7 @@ def do_mcmc(xcms,
 
     else:
         chain.attrs["count"] = index
-        write_xspec_chains(outchain, chain, lnprob, combmodel)
+        write_xspec_chains(outchain, chain[0,:,:,:], lnprob[0,:,:], combmodel)
     
     hdf5file.close()
 
@@ -204,8 +206,8 @@ def write_xspec_chains(filenames, chain, lnprob, combmodel):
 
         # write each walker separately
         for wi in xrange(nwalkers):
-            chainw = chain[0,wi, :, :]
-            statw = lnprob[0,wi, :]
+            chainw = chain[wi,:,:]
+            statw = lnprob[wi,:]
 
             # then the iterations
             for params, stat in itertools.izip(chainw, statw):

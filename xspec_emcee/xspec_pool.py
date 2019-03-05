@@ -203,6 +203,7 @@ class XspecPool:
 
         # get prior for initial likelihood
         likes = N.array([self.combmodel.prior(v) for v in paramlist])
+        lprior = N.copy(likes)
         # list of parameters with finite priors
         toprocess = list(N.nonzero(N.isfinite(likes))[0])
 
@@ -235,4 +236,11 @@ class XspecPool:
                     ))
         self.itercount += 1
 
-        return likes
+        output = []
+        for i in range(len(likes)):
+            output.append([likes[i],lprior[i]])
+            
+        #return [[likes]] #,[lprior]]
+        return output
+
+
