@@ -11,7 +11,7 @@ parameters in log space.
 
 This program has the additional advantage that it can effectively sample
 multi-modal posterior distributions using the parallel tempering ensemble
-sampler built into emcee.
+sampler built into emcee. 
 
 ** Please acknowledge use of the XPEC_EMCEE by Jeremy Sanders in any
 publications, and the modifications by Alexander Dittmann if they
@@ -32,14 +32,20 @@ xspec:    http://heasarc.nasa.gov/xanadu/xspec/
 USAGE:
 
 The program will run using an input XCM file (loading data+model). It
-writes out an xspec-compatible chain file, plus a HDF5 data file
-containing the chains and log likelihoods.
+writes out an xspec-compatible chain file, numpy binary files of the 
+chains and log likelihoods, plus a HDF5 data file containing the chains 
+and log likelihoods.
 
 You need to choose the number of iterations, length of burn in period,
 number of temperatures, and number of walkers. Remember that for every
 iteration you get the number of walkers points in the output chain file.
 The chains from the walkers are flattened in the output .chain file, 
 with all the results from one walker, followed by the next.
+
+Note that for N temperatures, the sampler will take roughly N times 
+longer to sample a uni-modal posterior. However, for multi-modal
+posterior distributions, convergence can be greatly accelerated 
+if N is large enough for walkers to reach the modes.
 
 The walkers are started clustered around the parameters of the XCM
 file given, using the delta value of the parameter as the width of a
@@ -105,4 +111,4 @@ optional arguments:
   --log-norm            log norm values during MCMC (default: False)
 
 TODO:
- - Debug, add binary table output
+
