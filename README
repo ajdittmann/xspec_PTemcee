@@ -26,7 +26,7 @@ REQUIREMENTS:
 Python:   2.x  (2.5 or better)
 argparse: http://pypi.python.org/pypi/argparse (for Python < 2.7)
 h5py:     http://www.h5py.org/
-emcee:    http://danfm.ca/emcee/
+emcee:    http://danfm.ca/emcee/ (version 2. e.g. pip install emcee==2.2.1)
 xspec:    http://heasarc.nasa.gov/xanadu/xspec/
 
 USAGE:
